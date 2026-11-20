@@ -35,11 +35,74 @@ app.get("/users", async (req, res) => {
 });
 
 //menus related api
-  //get menus
+  // get menus
   app.get("/menus", async (req, res) => {
-  const result = await menuCollection.find().sort({ _id: -1 }).toArray();
-  res.send(result);
-});
+    const query = {}
+
+    console.log("query", req.query)
+
+    // Sorting price by asc and desc
+    let sortOption = { _id: -1 }
+
+    if (req.query.sort === "asc") {
+      sortOption = { price: 1, _id: -1 }
+    }
+
+    if (req.query.sort === "desc") {
+      sortOption = { price: -1, _id: -1 }
+    }
+
+    // Search by name and description
+    if (req.query.search) {
+      query.$or = [
+        { name: { $regex: req.query.search, $options: "i" } },
+        { description: { $regex: req.query.search, $options: "i" } }
+      ]
+    }
+
+    // Individual filters
+    if (req.query.name) {
+      query.name = { $regex: req.query.name, $options: "i" }
+    }
+
+    if (req.query.category) {
+      query.category = req.query.category
+    }
+
+    if (req.query.price) {
+      query.price = Number(req.query.price)
+    }
+
+    if (req.query.description) {
+      query.description = {
+        $regex: req.query.description,
+        $options: "i"
+      }
+    }
+
+    if (req.query.location) {
+      query.location = {
+        $regex: req.query.location,
+        $options: "i"
+      }
+    }
+
+    if (req.query.imageUrl) {
+      query.imageUrl = req.query.imageUrl
+    }
+
+    if (req.query.status) {
+      query.status = req.query.status
+    }
+
+    // Get menus
+    const result = await menuCollection
+      .find(query)
+      .sort(sortOption)
+      .toArray()
+
+    res.send(result)
+  })
   //post new menu
   app.post("/menus", async (req, res) => {
     const menu = {
