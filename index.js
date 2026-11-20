@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import "dotenv/config";
 
 const app = express();
@@ -35,16 +35,25 @@ app.get("/users", async (req, res) => {
 });
 
 //menus related api
- //get menus
+  //get menus
   app.get("/menus", async (req, res) => {
-    const cursor = menuCollection.find();
-    const result = await cursor.toArray();
-    res.send(result);
-  });
+  const result = await menuCollection.find().sort({ _id: -1 }).toArray();
+  res.send(result);
+});
   //post new menu
   app.post("/menus", async (req, res) => {
-    const menu = req.body;
+    const menu = {
+    ...req.body,
+    status: "Pending",
+  };
     const result = await menuCollection.insertOne(menu);
+    res.send(result);
+  });
+  //delete menu
+  app.delete("/menus/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = { _id: new ObjectId(id) };
+    const result = await menuCollection.deleteOne(query);
     res.send(result);
   });
 
