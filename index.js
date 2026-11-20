@@ -22,6 +22,26 @@ export async function connectToMongoDB() {
   }
 }
 const mongoClient = await connectToMongoDB()
+//database
+const db = mongoClient.db("pizzahubdb")
+const userCollection = db.collection("user")
+const menuCollection = db.collection("menus")
+
+//users
+app.get('/users', async(req, res) => {
+    const cursor = userCollection.find({});
+    const result = await cursor.toArray()
+    res.send(result)
+
+})
+
+//menus related api
+app.post('/menus', async(req,res)=>{
+    const menu = req.body
+    const result = await menuCollection.insertOne(menu)
+    res.send(result)
+})
+
 
 app.get('/', (req, res) => {
   res.send('Pizzahub Server is running!');
